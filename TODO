@@ -1,0 +1,5 @@
+- 3 node HA in ControlPLane setup
+- Parametrize the K8s version to install
+- Parametrize the container engine to use
+- Support Vcenter Cluster
+- Support (in other banches) other virtualization platform
