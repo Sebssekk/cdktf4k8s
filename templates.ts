@@ -31,7 +31,7 @@ export const userData = (stackType:StackType) => Fn.templatefile(getFilename( ['
    sshAuthKey: process.env.sshAuthKey || 'NONE',
    startupScriptB64: process.env.startupScriptB64 || 'NONE',
    osMode: process.env.osMode,
-   osVersion: process.env.osVersion,
+   osVersion: Number(process.env.osVersion),
    osFamily: process.env.osFamily,
    stackType: stackType,
 })

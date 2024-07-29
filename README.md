@@ -52,3 +52,4 @@ At the moment the project was successfully tested with
 - fedora 39
 - fedora 40
 - ubuntu 22.04
+- ubuntu 24.04

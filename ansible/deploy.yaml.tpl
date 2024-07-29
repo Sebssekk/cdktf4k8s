@@ -48,7 +48,13 @@
       shell: 
         cmd: kubectl taint nodes --all node-role.kubernetes.io/control-plane-
       when: (groups['workers'] | length ) == 0
-    
+
+    - name: Check for EXTERNALLY-MANAGED python flag and remove it
+      become: true
+      shell: if [ -f /usr/lib/python*/EXTERNALLY-MANAGED ]; then for f in $(ls /usr/lib/python*/EXTERNALLY-MANAGED);do mv $f $${f}.old; done; fi
+      args:
+        executable: /bin/bash
+
     - name: Install k8s python package
       pip:
         name: kubernetes

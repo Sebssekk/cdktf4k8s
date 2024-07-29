@@ -2,7 +2,7 @@ import 'dotenv/config'
 import * as ipaddr from 'ipaddr.js'
 
 const OS_version_map: {[os:string]:string[]} = {
-    ubuntu: ['22.04'],
+    ubuntu: ['22.04', '24.04'],
     fedora: ['39','40']
 }
 
