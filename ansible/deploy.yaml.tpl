@@ -269,7 +269,6 @@
         executable: /bin/bash
     - name: K alias for kubectl
       shell: |
-        alias k=kubectl && \
-        complete -o default -F __start_kubectl k
+        echo -e "alias k=kubectl \ncomplete -o default -F __start_kubectl k" >> ~/.bashrc 
       args:
         executable: /bin/bash
