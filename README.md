@@ -31,7 +31,10 @@ To use this repo you must
 - wait for completion
 
 ## **What's inside**
-This repo will install a *kubeadm* based kubernetes cluster.  
+This repo will install a *kubeadm* based kubernetes cluster. 
+- If *fedora* is selected as base OS, [**CRI-O**](https://cri-o.io) will be used as container runtime.
+- If *ubuntu* is selected as base OS, [**containerd**](https://containerd.io) will be used as container runtime.
+
 Moreover will add to the basic installation
 - [**MetalLB**](https://metallb.universe.tf) for *LoadBAlancer* service.  
     (Configured with *L2Advertisement*)
