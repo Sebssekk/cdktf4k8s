@@ -38,9 +38,11 @@ write_files:
 - path: /k8s-prep
 %{ if (osFamily == "fedora") ~}
   content: |
-    #!/bin/bash
+    #!/bin/
+%{ if (updateOs == 'yes') ~}
     dnf -y update
     dnf -y autoremove
+%{ endif ~}
     # Disable swap. Kubernetes is configured to generate an installation error if swap is detected
     systemctl stop swap-create@zram0
     dnf -y remove zram-generator-defaults
@@ -65,7 +67,10 @@ write_files:
     touch /etc/resolv.conf
 %{ else ~}
   content: |
-    apt -y update && apt -y upgrade
+    apt -y update
+%{ if (updateOs == 'yes') ~}
+    apt -y upgrade
+%{ endif ~}
     # Get rid of unattended-upgrades
     systemctl stop unattended-upgrades
     apt-get -y purge unattended-upgrades
@@ -73,7 +78,7 @@ write_files:
     swapoff -a && sed -i '/ swap / s/^\(.*\)$/#\1/g' /etc/fstab
   
     #Install pkgs
-    apt install -y curl gnupg2 software-properties-common apt-transport-https ca-certificates python3-pip
+    apt install -y curl jq gnupg2 software-properties-common apt-transport-https ca-certificates python3-pip
     curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmour -o /etc/apt/trusted.gpg.d/docker.gpg && add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" && apt update
     apt install -y containerd.io
     containerd config default | tee /etc/containerd/config.toml >/dev/null 2>&1

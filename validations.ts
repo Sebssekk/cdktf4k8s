@@ -49,15 +49,20 @@ export const validate = () => {
         }
     })
 
+    const {updateOS} = process.env
+    if( !updateOS || ['yes','no'].includes(updateOS)){
+        throw Error("ENV - updtaeOS ENV must be 'yes' or 'no'")
+    }
+
     const {k8sCpNum,k8sWNum} = process.env
-    if (!(Number(k8sCpNum) == 1  )){ //|| Number(k8sCpNum) == 3 )){ // TODO: Implement HA with 3 control plane
-        throw Error("ENV - Number of Control Plane machines must be 1 : check variable 'k8sCpNum'")
+    if (Number(k8sCpNum) % 2 != 1 || Number(k8sCpNum) >5){ 
+        throw Error("ENV - Number of Control Plane machines must be an ODD number (not more than 5): check variable 'k8sCpNum'")
     }
     if (Number(k8sWNum) < 0 ){
         throw Error("ENV - Number of Worker machines must be greater or equal to 0: check variable 'k8sWNum'")
     }
 
-    const {vlan,network,gateway,prefix,podCidr} = process.env
+    const {vlan,network,gateway,prefix,podCidr,cpVip} = process.env
     if(!vlan || vlan === '' || !network || network === '' || !gateway || gateway === '' || !prefix || prefix === ''){
         throw Error("ENV - Missing Vsphere Network information: check envs 'vlan,network,gateway,prefix'")
     }
@@ -65,6 +70,7 @@ export const validate = () => {
     if (!ipaddr.isValid(network)){
         throw Error("ENV - Network address is not a valid address")
     }
+    
     if (!ipaddr.isValidCIDR(`${network}/${prefix}`)){
         throw Error("ENV - Network/prefix address is not a valid CIDR")
     }
@@ -72,6 +78,14 @@ export const validate = () => {
     const cidr = ipaddr.parseCIDR(`${network}/${prefix}`)
     const bc_add = ipaddr.IPv4.broadcastAddressFromCIDR(`${network}/${prefix}`)
     const net_add = ipaddr.IPv4.networkAddressFromCIDR(`${network}/${prefix}`)
+
+    if (Number(k8sCpNum) > 1 && !cpVip ){
+        throw Error("ENV - NUmber of Control PLane is greater than 1 but VIP address is not defined")
+    }
+
+    if (cpVip && !ipaddr.isValid(cpVip) && !ipaddr.parse(cpVip).match(cidr)){
+        throw Error("ENV - VIP address is not a valid address. Must be in the same network of K8s nodes")
+    }
 
     if(!ipaddr.isValidCIDR(podCidr||'')){
         throw Error(`ENV - Given pod cidr ${podCidr} is not a valid Network address - check 'podCidr' env`)

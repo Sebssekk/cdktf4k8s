@@ -1,0 +1,6 @@
+- name: Initialize the First Control Plane node
+  ansible.builtin.import_playbook: kube-init.yaml
+- name: Join other nodes (workers and masters)
+  ansible.builtin.import_playbook: kube-join.yaml
+- name: Configure K8s with addons
+  ansible.builtin.import_playbook: k8s-config.yaml

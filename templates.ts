@@ -24,6 +24,7 @@ export const userMetadata =(stackType: StackType,index: number): string => (Fn.t
 }))
 
 export const userData = (stackType:StackType) => Fn.templatefile(getFilename( ['guestinfo', 'userdata.yaml.tpl']),{
+   updateOS: process.env.updateOS,
    user: process.env.osUser,
    userFullname: process.env.osUserFullname || process.env.osUser,
    groups: process.env.osGroups || 'wheel,sudo',
@@ -42,8 +43,26 @@ export const inventoryYaml = (cpIps: string[],wIps: string[] ): string => Fn.tem
    user: process.env.osUser,
    password: process.env.osUserPsw
 })
-export const deployYaml  = Fn.templatefile(getFilename(['ansible','deploy.yaml.tpl']),{
+//export const deployYaml  = Fn.templatefile(getFilename(['ansible','deploy.yaml.tpl']),{
+//   pod_cidr: process.env.podCidr,
+//   lbIpPoolAddress: process.env.l2LbIpPoolAddress,
+//   osFamily: process.env.osFamily,
+//   if: process.env.interface,
+//   cpVip: '10.0.4.170'
+//})
+
+export const kubeInit = Fn.templatefile(getFilename(['ansible','kube-init.yaml.tpl']),{
    pod_cidr: process.env.podCidr,
-   lbIpPoolAddress: process.env.l2LbIpPoolAddress,
    osFamily: process.env.osFamily,
+   if: process.env.interface,
+   cpVip: process.env.cpVip,
+   k8sCpNum: Number(process.env.k8sCpNum)
+})
+
+export const kubeJoin = Fn.templatefile(getFilename(['ansible','kube-join.yaml.tpl']),{
+   k8sCpNum: Number(process.env.k8sCpNum)
+})
+
+export const k8sConfig = Fn.templatefile(getFilename(['ansible','k8s-config.yaml.tpl']),{
+   lbIpPoolAddress: process.env.l2LbIpPoolAddress,
 })
