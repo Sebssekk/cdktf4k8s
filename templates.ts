@@ -35,6 +35,7 @@ export const userData = (stackType:StackType) => Fn.templatefile(getFilename( ['
    osVersion: Number(process.env.osVersion),
    osFamily: process.env.osFamily,
    stackType: stackType,
+   workersNum: Number(process.env.k8sWNum)
 })
 
 export const inventoryYaml = (cpIps: string[],wIps: string[] ): string => Fn.templatefile(getFilename(['ansible','inventory.yaml.tpl']),{

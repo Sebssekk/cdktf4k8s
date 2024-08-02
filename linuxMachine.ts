@@ -29,7 +29,7 @@ export class LinuxMachine extends TerraformStack{
         
           
         new VsphereProvider(this, 'vsphere',vsphereProviderData)
-        
+        const workersNum: number = Number(process.env.k8sWNum)
         const machinesNum: number = Number(process.env[`${stackType}Num`])
         console.log(`${stackType} Machines to create: ${machinesNum}`)
 
@@ -59,7 +59,7 @@ export class LinuxMachine extends TerraformStack{
                     datastoreId: hostsData[thisHostData].datastore.id,
                     unitNumber: 0
                   },
-                  ...stackType == StackType.WORKER ?
+                  ...(stackType !== StackType.CP || workersNum === 0 ) ?
                   [{
                     label: "disk1",
                     size: Number(process.env[`perNodeK8sStorageGB`]),
@@ -69,7 +69,7 @@ export class LinuxMachine extends TerraformStack{
                   }] : []
                 ],
                 
-                folder: `/${process.env.vsphereDatacenter}/vm/${process.env.vsphereDatacenterFolder}`,
+                folder: `${process.env.vsphereDatacenterFolder}`,
                 
                 ovfDeploy: {
                   allowUnverifiedSslCert: true,

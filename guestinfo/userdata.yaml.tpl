@@ -38,8 +38,8 @@ write_files:
 - path: /k8s-prep
 %{ if (osFamily == "fedora") ~}
   content: |
-    #!/bin/
-%{ if (updateOs == 'yes') ~}
+    #!/bin/bash
+%{ if (updateOS == "yes") ~}
     dnf -y update
     dnf -y autoremove
 %{ endif ~}
@@ -68,7 +68,7 @@ write_files:
 %{ else ~}
   content: |
     apt -y update
-%{ if (updateOs == 'yes') ~}
+%{ if (updateOS == "yes") ~}
     apt -y upgrade
 %{ endif ~}
     # Get rid of unattended-upgrades
@@ -102,7 +102,7 @@ write_files:
     net.ipv4.ip_forward                 = 1
     EOF
     sysctl --system
-%{ if (stackType == "k8sW") ~}
+%{ if (stackType != "k8sCp") || (workersNum == 0) ~}
     #Prepare LVM for storage Class
     pvcreate /dev/sdb
     vgcreate lvmvg /dev/sdb

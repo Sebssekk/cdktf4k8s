@@ -50,7 +50,7 @@ export const validate = () => {
     })
 
     const {updateOS} = process.env
-    if( !updateOS || ['yes','no'].includes(updateOS)){
+    if( !updateOS || !['yes','no'].includes(updateOS)){
         throw Error("ENV - updtaeOS ENV must be 'yes' or 'no'")
     }
 
@@ -98,12 +98,12 @@ export const validate = () => {
         throw Error("ENV - Gateway address is not a valid address")
     }
 
-    const {k8sCpAddresses,k8sWAddresses} = process.env
+    const {k8sCpAddresses} = process.env
     if (!k8sCpAddresses || k8sCpAddresses === ''){
         throw Error("ENV - No ip addresses were configured for Control Plane - check 'k8sCpAddresses' env")
     }
-    if (!k8sWAddresses || k8sWAddresses === ''){
-        throw Error("ENV - No ip addresses were configured for Worker Nodes - check 'k8sWAddresses' env")
+    if (Number(k8sCpNum) !== k8sCpAddresses?.split(',').length){
+        throw Error(`ENV - Number of Ips [${k8sCpAddresses}] and number of machine [${k8sCpNum}] do not match for Control Plane`)
     }
     k8sCpAddresses.split(',').map( _ip => {
         if (ipaddr.isValid(_ip)){
@@ -115,23 +115,7 @@ export const validate = () => {
             throw Error(`ENV - ip address ${_ip} is not a valid ip`)
         }
     })
-    k8sWAddresses.split(',').map( _ip => {
-        if (ipaddr.isValid(_ip)){
-            const ip = ipaddr.parse(_ip)
-            if (!ip.match(cidr) || ip.toString() === net_add.toString() || ip.toString() === bc_add.toString()){
-                throw Error(`ENV - ip address ${_ip} is not a valid ip in this network`)
-            }
-        } else {
-            throw Error(`ENV - ip address ${_ip} is not a valid ip`)
-        }
-    })
-    if (Number(k8sCpNum) !== k8sCpAddresses?.split(',').length){
-        throw Error(`ENV - Number of Ips [${k8sCpAddresses}] and number of machine [${k8sCpNum}] do not match for Control Plane`)
-    }
-    if (Number(k8sWNum) !== k8sWAddresses?.split(',').length){
-        throw Error(`ENV - Number of Ips [${k8sWAddresses}] and number of machine [${k8sWNum}] do not match for Worker nodes`)
-    }
-
+    
     if (!process.env.interface || process.env.interface === "" || !process.env.dns || process.env.dns === '' ){
         throw Error("ENV - Machine network is incomplete: check 'dns,interface' envs")
     }
@@ -162,16 +146,37 @@ export const validate = () => {
     if ( Number(k8sCpMemMB)<2048 || Number(k8sCpMemMB) > 32768 ){
         throw Error("ENV - Memory size must be in range 2048 - 32768 MB for Control Plane : check 'k8sCpMemMB' env")
     }
-    const {k8sWDiskSizeGB,k8sWMemMB,k8sWCpu,perNodeK8sStorageGB} = process.env  
-    if (Number(k8sWCpu)<1 || Number(k8sWCpu)>32 ){
-        throw Error("ENV - Number of CPU must be greater than 1 and less than 32 for Worker Nodes: check 'k8sWCpu' env")
+    if (Number(k8sWNum)>0){
+        const {k8sWDiskSizeGB,k8sWMemMB,k8sWCpu,k8sWAddresses} = process.env  
+        if (Number(k8sWCpu)<1 || Number(k8sWCpu)>32 ){
+            throw Error("ENV - Number of CPU must be greater than 1 and less than 32 for Worker Nodes: check 'k8sWCpu' env")
+        }
+        if (Number(k8sWDiskSizeGB)<20 || Number(k8sWDiskSizeGB)> 500){
+            throw Error("ENV - Supported disk size (GB) range for Worker nodes is 20-500: check 'k8sWDiskSizeGB' env")
+        }
+        if ( Number(k8sWMemMB)<1024 || Number(k8sWMemMB) > 32768 ){
+            throw Error("ENV - Memory size must be in range 1024 - 32768 MB for Worker nodes : check 'k8sWMemMB' env")
+        }
+
+        if (!k8sWAddresses || k8sWAddresses === ''){
+            throw Error("ENV - No ip addresses were configured for Worker Nodes - check 'k8sWAddresses' env")
+        }
+        if (Number(k8sWNum) !== k8sWAddresses?.split(',').length){
+            throw Error(`ENV - Number of Ips [${k8sWAddresses}] and number of machine [${k8sWNum}] do not match for Worker nodes`)
+        }
+        k8sWAddresses.split(',').map( _ip => {
+            if (ipaddr.isValid(_ip)){
+                const ip = ipaddr.parse(_ip)
+                if (!ip.match(cidr) || ip.toString() === net_add.toString() || ip.toString() === bc_add.toString()){
+                    throw Error(`ENV - ip address ${_ip} is not a valid ip in this network`)
+                }
+            } else {
+                throw Error(`ENV - ip address ${_ip} is not a valid ip`)
+            }
+        })
     }
-    if (Number(k8sWDiskSizeGB)<20 || Number(k8sWDiskSizeGB)> 500){
-        throw Error("ENV - Supported disk size (GB) range for Worker nodes is 20-500: check 'k8sWDiskSizeGB' env")
-    }
-    if ( Number(k8sWMemMB)<1024 || Number(k8sWMemMB) > 32768 ){
-        throw Error("ENV - Memory size must be in range 1024 - 32768 MB for Worker nodes : check 'k8sWMemMB' env")
-    }
+    
+    const {perNodeK8sStorageGB} = process.env  
     if (Number(perNodeK8sStorageGB)<1 || Number(perNodeK8sStorageGB)>500 ){
         throw Error("ENV - Supported disk size (GB) range for Worker Storage Space is 1-500: check 'perNodeK8sStorageGB' env")
     }
